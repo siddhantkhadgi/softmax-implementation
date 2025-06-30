@@ -24,7 +24,6 @@ void randInts(float *x, int size)
     }
 }
 
-// Your existing kernel (assumed to be defined elsewhere)
 __global__ void find_max_and_norm_vectorized(float *A, int N, float *max, float *norm)
 {
     __shared__ float smem[512];
@@ -189,7 +188,6 @@ void process_chunks(float *A, int N, float *global_max, float *global_norm)
             *global_max = *chunk_max;
         }
         
-        // For now, just accumulate norm (this is not mathematically correct for softmax)
         // We'll need a second pass for correct softmax computation
         *global_norm += *chunk_norm;
         
@@ -272,31 +270,6 @@ int main()
     printf("\nFinal Results:\n");
     printf("Global Max: %f\n", *max_result);
     printf("Global Norm: %f\n", *norm_result);
-    
-    // Verify with CPU calculation (optional, for small arrays)
-    if (N <= 10000)
-    {
-        float cpu_max = -FLT_MAX;
-        float cpu_norm = 0.0f;
-        
-        // Find max
-        for (int i = 0; i < N; i++)
-        {
-            if (A[i] > cpu_max) cpu_max = A[i];
-        }
-        
-        // Calculate norm
-        for (int i = 0; i < N; i++)
-        {
-            cpu_norm += expf(A[i] - cpu_max);
-        }
-        
-        printf("\nCPU Verification:\n");
-        printf("CPU Max: %f (GPU: %f, diff: %f)\n", cpu_max, *max_result, 
-               fabsf(cpu_max - *max_result));
-        printf("CPU Norm: %f (GPU: %f, diff: %f)\n", cpu_norm, *norm_result, 
-               fabsf(cpu_norm - *norm_result));
-    }
     
     // Cleanup
     free(A);
